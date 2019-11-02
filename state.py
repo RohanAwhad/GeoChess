@@ -46,16 +46,16 @@ class State(object):
         bstate = bstate.reshape(8, 8)
         
         #binary state
-        state = np.zeros((8,8,5), np.uint8)
+        state = np.zeros((5,8,8), np.uint8)
 
         # 0-3 cols to binary
-        state[:, :, 0] = (bstate>>3)&1
-        state[:, :, 1] = (bstate>>2)&1
-        state[:, :, 2] = (bstate>>1)&1
-        state[:, :, 3] = (bstate>>0)&1
+        state[0] = (bstate>>3)&1
+        state[1] = (bstate>>2)&1
+        state[2] = (bstate>>1)&1
+        state[3] = (bstate>>0)&1
 
         # 4th col is who's turn is it
-        state[:, :, 4] = (self.board.turn*1.0)
+        state[4] = (self.board.turn*1.0)
 
         return state
 
