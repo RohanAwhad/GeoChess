@@ -2,4 +2,5 @@
 *.pyc
 data
 processed
+nets
 __pycache__

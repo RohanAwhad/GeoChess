@@ -9,9 +9,6 @@ class State(object):
         else:
             self.board = board
 
-    def value(self):
-        return 1
-
     def edges(self):
         return list(self.board.legal_moves)
 
@@ -65,4 +62,4 @@ class State(object):
 
 if __name__=='__main__':
     s = State()
-    print(s.edges())
+    ###print(s.edges())

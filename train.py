@@ -79,7 +79,8 @@ if __name__ == '__main__':
 
     device = 'cuda'
 
-    model.cuda()
+    if device == 'cuda':
+        model.cuda()
     model.train()
 
     for epoch in range(100):
@@ -100,3 +101,4 @@ if __name__ == '__main__':
             all_loss += loss.item()
 
         print(f'{epoch:3d}: {all_loss}')
+        torch.save(model.state_dict(), "nets/value.pth")
