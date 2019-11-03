@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 class ChessValueDataset(Dataset):
     def __init__(self):
-        dat = np.load('processed/dataset_100k.npz')
+        dat = np.load('processed/dataset_10M.npz')
         self.X = dat['arr_0']
         self.Y = dat['arr_1']
 
@@ -85,6 +85,7 @@ if __name__ == '__main__':
 
     for epoch in range(100):
         all_loss = 0
+        num = 0
         for batch_idx, (data, target) in enumerate(train_loader):
             target = target.unsqueeze(-1)
             data = data.float()
@@ -99,6 +100,7 @@ if __name__ == '__main__':
             optimizer.step()
 
             all_loss += loss.item()
+            num += 1
 
-        print(f'{epoch:3d}: {all_loss}')
-        torch.save(model.state_dict(), "nets/value.pth")
+        print(f'{epoch:3d}: {all_loss/num:.4f}')
+        torch.save(model.state_dict(), "nets/value_10M.pth")

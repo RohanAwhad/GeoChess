@@ -35,11 +35,9 @@ def get_dataset(num_samples=None):
             if num_samples is not None and len(X) > num_samples:
                 return X, Y
 
-    X = np.array(X)
-    Y = np.array(Y)
     return X, Y
 
 
 if __name__ == "__main__":
-    X, Y = get_dataset(1e7)
-    np.savez("processed/dataset_10M.npz", X, Y)
+    X, Y = get_dataset(25000000)
+    np.savez("processed/dataset_25M.npz", X, Y)
