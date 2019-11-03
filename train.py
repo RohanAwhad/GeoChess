@@ -26,16 +26,16 @@ class Net(nn.Module):
 
         self.a1 = nn.Conv2d(5, 16, kernel_size=3, padding=1)
         self.a2 = nn.Conv2d(16, 16, kernel_size=3, padding=1)
-        self.a3 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
+        self.a3 = nn.Conv2d(16, 32, kernel_size=3, stride=2)
 
         self.b1 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
         self.b2 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
-        self.b3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.b3 = nn.Conv2d(32, 64, kernel_size=3, stride=2)
 
         self.c1 = nn.Conv2d(64, 64, kernel_size=2, padding=1)
         self.c2 = nn.Conv2d(64, 64, kernel_size=2, padding=1)
-        self.c3 = nn.Conv2d(64, 128, kernel_size=2)
-        
+        self.c3 = nn.Conv2d(64, 128, kernel_size=2, stride=2) 
+
         self.d1 = nn.Conv2d(128, 128, kernel_size=1)
         self.d2 = nn.Conv2d(128, 128, kernel_size=1)
         self.d3 = nn.Conv2d(128, 128, kernel_size=1)
@@ -46,20 +46,17 @@ class Net(nn.Module):
         x = F.relu(self.a1(x))
         x = F.relu(self.a2(x))
         x = F.relu(self.a3(x))
-        x = F.max_pool2d(x,2)
 
         # 4x4
         x = F.relu(self.b1(x))
         x = F.relu(self.b2(x))
         x = F.relu(self.b3(x))
-        x = F.max_pool2d(x,2)
 
 
         # 2x2
         x = F.relu(self.c1(x))
         x = F.relu(self.c2(x))
         x = F.relu(self.c3(x))
-        x = F.max_pool2d(x,2)
         
         # 1x64
         x = F.relu(self.d1(x))
@@ -70,35 +67,36 @@ class Net(nn.Module):
         x = self.last(x)
 
         #value output
-        return F.log_softmax(x)
+        return torch.tanh(x)
 
 
-chess_dataset = ChessValueDataset()
-train_loader = torch.utils.data.DataLoader(chess_dataset, batch_size=256, shuffle=True)
-model = Net()
-optimizer = optim.Adam(model.parameters())
-floss = nn.MSELoss()
+if __name__ == '__main__':
+    chess_dataset = ChessValueDataset()
+    train_loader = torch.utils.data.DataLoader(chess_dataset, batch_size=256, shuffle=True)
+    model = Net()
+    optimizer = optim.Adam(model.parameters())
+    floss = nn.MSELoss()
 
-device = 'cuda'
+    device = 'cuda'
 
-model.cuda()
-model.train()
+    model.cuda()
+    model.train()
 
-for epoch in range(100):
-    all_loss = 0
-    for batch_idx, (data, target) in enumerate(train_loader):
-        target = target.unsqueeze(-1)
-        data = data.float()
-        target = target.float()
-        data, target = data.to(device), target.to(device)
+    for epoch in range(100):
+        all_loss = 0
+        for batch_idx, (data, target) in enumerate(train_loader):
+            target = target.unsqueeze(-1)
+            data = data.float()
+            target = target.float()
+            data, target = data.to(device), target.to(device)
 
-        optimizer.zero_grad()
-        output = model(data)
-        
-        loss = floss(output, target)
-        loss.backward()
-        optimizer.step()
+            optimizer.zero_grad()
+            output = model(data)
+            
+            loss = floss(output, target)
+            loss.backward()
+            optimizer.step()
 
-        all_loss += loss.item()
+            all_loss += loss.item()
 
-    print(f'{epoch}: {all_loss:.2f}')
+        print(f'{epoch:3d}: {all_loss}')
