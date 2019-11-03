@@ -4,6 +4,7 @@ import time
 from train import Net
 import torch
 import chess
+import traceback
 import chess.svg
 from state import State
 
@@ -64,8 +65,11 @@ def human_move():
         move = request.args.get('move', default="")
         if move is not None and move != '':
             print(f'Human moves {move}')
-            s.board.push_san(move)
-        computer_move()
+            try:
+                s.board.push_san(move)
+                computer_move()
+            except Exception:
+                traceback.print_exc()
     else:
         print('GAME IS OVER')
     return hello()
