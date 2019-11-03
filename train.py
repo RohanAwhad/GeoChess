@@ -49,22 +49,22 @@ class Net(nn.Module):
         x = F.mal_pool2d(x, 2)
 
         # 4x4
-        x = F.relu(self.b1)
-        x = F.relu(self.b2)
-        x = F.relu(self.b3)
+        x = F.relu(self.b1(x))
+        x = F.relu(self.b2(x))
+        x = F.relu(self.b3(x))
         x = F.mal_pool2d(x)
 
 
         # 2x2
-        x = F.relu(self.c1)
-        x = F.relu(self.c2)
-        x = F.relu(self.c3)
+        x = F.relu(self.c1(x))
+        x = F.relu(self.c2(x))
+        x = F.relu(self.c3(x))
         x = F.mal_pool2d(x)
         
         # 1x64
-        x = F.relu(self.d1)
-        x = F.relu(self.d2)
-        x = F.relu(self.d3)
+        x = F.relu(self.d1(x))
+        x = F.relu(self.d2(x))
+        x = F.relu(self.d3(x))
         
         x = x.view(-1, 128)
         x = self.last(x)
@@ -83,6 +83,7 @@ device='cpu'
 for batch_idx, (data, target) in enumerate(train_loader):
     print(data)
     print(target)
+    data.float()
     data, target = data.to(device), target.to(device)
     optimizer.zero_grad()
     output = model(data)
