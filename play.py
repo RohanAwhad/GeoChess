@@ -47,6 +47,7 @@ class ClassicValuator(object):
 				val += self.values[pm[x].piece_type]
 			else:
 				val -= self.values[pm[x].piece_type]
+
 		return val
 		
 
@@ -97,17 +98,7 @@ def computer_move(s, v):
 app = Flask(__name__)
 @app.route('/')
 def hello():
-	ret = '<html>'
-	ret += '<head>'
-	ret += '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>'
-	ret += '<style>input{font-size:24px; }button {font-size:24px; }</style>'
-	ret += '</head>'
-	ret += '<body>'
-	ret += '<img width=500, height=500 src="/board.svg?%f"></img><br>' % time.time()
-	ret += '<form action="/human"><input type="text" name="move"><input type="submit" value="Move"></form><br>'
-	#ret += '<button onclick=\'$.ajax({type: "POST", url:"/move", success: function rf(){ location.reload();}});\'>Make Computer Move</button>'
-	ret += '</body>'
-	ret += '</html>'
+	ret = open('index.html').read()
 	return ret
 
 @app.route('/board.svg')
@@ -115,8 +106,8 @@ def board():
 	# play vs human
 	return Response(chess.svg.board(board=s.board), mimetype='image/svg+xml')
 
-@app.route('/human')
-def human_move():
+@app.route('/move')
+def move():
 	if not s.board.is_game_over():
 		move = request.args.get('move', default="")
 		if move is not None and move != '':
@@ -126,14 +117,59 @@ def human_move():
 				computer_move(s, v)
 			except Exception:
 				traceback.print_exc()
+			response = app.response_class(
+				response=s.board.fen(),
+				status=200
+			)
+			return response
 	else:
 		print('GAME IS OVER')
+		response = app.response_class(
+			response="Game Over",
+			status=200
+		)
+		return response
 	return hello()
 
-@app.route('/move', methods=['POST'])
-def comp_move():
-	computer_move()
-	return ''
+@app.route("/move_coordinates")
+def move_coordinates():
+	if not s.board.is_game_over():
+		source = int(request.args.get('from', default=''))
+		target = int(request.args.get('to', default=''))
+		promotion = True if request.args.get('promotion', default='') == 'true' else False
+
+		move = s.board.san(chess.Move(source, target, promotion=chess.Queen if promotion else None))
+
+		if move is not None and move != "":
+			print("Human Moves", move)
+			try:
+				s.board.push_san(move)
+				computer_move(s,v)
+			except Exception:
+				traceback.print_exc()
+			response=app.response_class(
+				response=s.board.fen(),
+				status=200
+			)
+
+			return response
+
+	print('GAME IS OVER')
+	response = app.response_class(
+		response="Game Over",
+		status=200
+	)
+	return response
+
+@app.route("/newgame")
+def newgame():
+	s.board.reset()
+	print('GAME IS OVER')
+	response = app.response_class(
+		response=s.board.fen(),
+		status=200
+	)
+	return response
 
 if __name__ == '__main__':
 	if os.getenv("SELFPLAY") is not None:
