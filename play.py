@@ -50,19 +50,22 @@ class ClassicValuator(object):
 		return val
 		
 
-def computer_minimax(s, v, depth=3):
+def computer_minimax(s, v, depth=2):
 	if depth == 0 or s.board.is_game_over():
 		return v(s)
 	else:
-		if s.board.turn == chess.WHITE: ret = -MAXVAL
+		turn = s.board.turn
+		if turn == chess.WHITE: ret = -MAXVAL
 		else: ret = MAXVAL
 		for e in s.edges():
+			#print(f'Pre Ret: {ret}, White Play: {s.board.turn}')
 			s.board.push(e)
 			tval = computer_minimax(s, v, depth-1)
-			if s.board.turn == chess.WHITE:
+			if turn == chess.WHITE:
 				ret = max(ret, tval)
 			else:
 				ret = min(ret, tval)
+			#print(f'Post Ret: {ret}, tVal: {tval}, White Play: {s.board.turn}')
 			s.board.pop()
 		return ret
 
@@ -72,13 +75,14 @@ def explore_leaves(s, v):
 	for e in s.edges():
 		s.board.push(e)
 		ret.append((computer_minimax(s, v), e))
+		#exit(0)
 		s.board.pop()
 	assert temp == s.board
 	return ret
 
 #Chess Board and Engine
-v = Valuator()
-#v = ClassicValuator()
+#v = Valuator()
+v = ClassicValuator()
 s = State()
 
 
@@ -86,8 +90,8 @@ s = State()
 def computer_move(s, v):
 	move = sorted(explore_leaves(s, v), key=lambda x: x[0], reverse=s.board.turn)
 	print('TOP 3: ')
-	for i in range(3):
-		print('\t',move[i])
+	for i, m in enumerate(move[:3]):
+		print('\t',m)
 	s.board.push(move[0][1])
 
 app = Flask(__name__)
@@ -119,7 +123,7 @@ def human_move():
 			print(f'Human moves {move}')
 			try:
 				s.board.push_san(move)
-				computer_move()
+				computer_move(s, v)
 			except Exception:
 				traceback.print_exc()
 	else:
