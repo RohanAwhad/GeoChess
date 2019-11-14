@@ -30,7 +30,7 @@ class ClassicValuator(object):
 				  chess.BISHOP: 3,
 				  chess.ROOK: 5,
 				  chess.QUEEN: 9,
-				  chess.KING: 0 }
+				  chess.KING: 100 }
 
 	def __call__(self, s):
 		if s.board.is_variant_win():
@@ -51,7 +51,7 @@ class ClassicValuator(object):
 		return val
 		
 
-def computer_minimax(s, v, depth=2):
+def computer_minimax(s, v, alpha, beta, depth=2):
 	if depth == 0 or s.board.is_game_over():
 		return v(s)
 	else:
@@ -61,29 +61,30 @@ def computer_minimax(s, v, depth=2):
 		for e in s.edges():
 			#print(f'Pre Ret: {ret}, White Play: {s.board.turn}')
 			s.board.push(e)
-			tval = computer_minimax(s, v, depth-1)
+			tval = computer_minimax(s, v, alpha, beta, depth-1)
 			if turn == chess.WHITE:
 				ret = max(ret, tval)
+				alpha = max(alpha, tval)
 			else:
 				ret = min(ret, tval)
+				beta = min(beta, tval)
 			#print(f'Post Ret: {ret}, tVal: {tval}, White Play: {s.board.turn}')
 			s.board.pop()
+			if beta <= alpha: break
 		return ret
 
 def explore_leaves(s, v):
 	ret = []
-	temp = s.board
+	print(s.edges()[0])
 	for e in s.edges():
 		s.board.push(e)
-		ret.append((computer_minimax(s, v), e))
-		#exit(0)
+		ret.append((computer_minimax(s, v, -100000, 100000), e))
 		s.board.pop()
-	assert temp == s.board
 	return ret
 
 #Chess Board and Engine
-#v = Valuator()
-v = ClassicValuator()
+v = Valuator()
+#v = ClassicValuator()
 s = State()
 
 
@@ -138,7 +139,7 @@ def move_coordinates():
 		target = int(request.args.get('to', default=''))
 		promotion = True if request.args.get('promotion', default='') == 'true' else False
 
-		move = s.board.san(chess.Move(source, target, promotion=chess.Queen if promotion else None))
+		move = s.board.san(chess.Move(source, target, promotion=chess.QUEEN if promotion else None))
 
 		if move is not None and move != "":
 			print("Human Moves", move)
